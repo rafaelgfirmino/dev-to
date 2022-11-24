@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+
+  sse:
+    build: .
+    container_name: sse
+    volumes:
+    - .:/go/src
+    ports:
+      - 9001:9001

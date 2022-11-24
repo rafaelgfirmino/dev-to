@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Page Title</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <script src='main.js'></script>
+</head>
+<body>
+  <div>
+    <ul id="messages">
+      
+    </ul>
+  </div>
+    <script>
+
+const source = new EventSource("http://localhost:9001/sse")
+      const ul = document.getElementById("messages");
+      source.onmessage = (event) => {
+        var li = document.createElement("li");
+
+        li.appendChild(document.createTextNode(`${event.data}`));
+        li.setAttribute("id", "element4"); // added line
+        ul.appendChild(li);
+        console.log("OnMessage Called:")
+        console.log(event)
+        console.log(JSON.parse(event.data))
+      }
+    </script>
+</body>
+</html>
