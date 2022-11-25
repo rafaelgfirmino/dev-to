@@ -1,0 +1,59 @@
+# This is the SAM template that represents the architecture of your serverless application
+# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-basics.html
+
+# The AWSTemplateFormatVersion identifies the capabilities of the template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Any description you want
+# Transform section specifies one or more macros that AWS CloudFormation uses to process your template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html
+Transform:
+  - AWS::Serverless-2016-10-31
+
+# Resources declares the AWS resources that you want to include in the stack
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 200
+    Runtime: go1.x
+    Environment:
+      Variables:
+        AnyParameterYouWant: !Ref AnyParameterYouWant #this parameter is injected in all lambdas in this file
+
+Parameters:
+  stage:
+    Type: String
+    Default: homologation
+  AnyParameterYouWant:
+    Type: String
+    Default:  this-stage-is-${stage}
+
+Resources:
+
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub helloWorld-${stage}
+      PackageType: Zip
+      CodeUri: src/presenter/lambda
+      Handler: lambda
+      Tracing: Active # https://docs.aws.amazon.com/lambda/latest/dg/lambda-x-ray.html
+      MemorySize: 1024
+      Events:
+        Schedule:
+          Type: Schedule
+          Properties:
+            Schedule: 'rate(5 minutes)'
+            Name: !Sub HelloWorld-${stage} #this is a name of schedule this approach change by stage name
+            Description: HelloWorldFunction
+            Enabled: true
+
+  HelloWorldLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${HelloWorldFunction}
+      RetentionInDays: 30
+    DependsOn: HelloWorldFunction

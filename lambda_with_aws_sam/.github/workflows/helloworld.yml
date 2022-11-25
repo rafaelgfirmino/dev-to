@@ -1,0 +1,52 @@
+name: hello - World
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'helloworld/**'
+      - '.github/workflows/helloworld.yml'
+jobs:
+  build:
+    name: hello Wold Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: helloworld
+    env:
+      ENV_APP: 'HelloWorldTest'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: aws-actions/setup-sam@v1
+
+      - name: aws login
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_ID_SAVED_IN_GITHUB_SECRETS }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRETS_SAVED_IN_GITHUB_SECRETS }}
+          aws-region: 'us-east-1'
+
+      - name: setup go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.19'
+
+      - name: download dependencies
+        run: go mod tidy -go=1.19
+
+      - name: Build app with SAM
+        run: sam build
+
+      - name: Upaload sam files for S3
+        run: |
+          sam package --template-file .aws-sam/build/template.yaml \
+          --s3-bucket lambda-resources-wieidjdh \
+          --output-template-file packaged.yaml
+      - name: Deploy sam
+        run: |
+          sam deploy --template-file packaged.yaml \
+          --parameter-overrides \
+            Stage=${{ env.ENV_APP }} \
+            AnyParameterYouWant="this_is_the_pipeline" \
+          --stack-name hello-world-${{ env.ENV_APP }} \
+          --capabilities CAPABILITY_IAM \
+          --no-confirm-changeset
