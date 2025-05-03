@@ -1,0 +1,51 @@
+load('ext://uibutton', 'cmd_button')
+
+
+# go mod tidy command used to update the go.mod file and add missing modules
+local_resource(
+    name='Go mod tidy',
+    labels=['Application'],
+    cmd='go mod tidy',
+)
+
+cmd_button('Getting_dependencies',
+    argv=['sh', '-c', 'go mod tidy'],
+    resource='Go mod tidy',
+    icon_name='cloud_download',
+    text='Update dependencies',
+    # location=location.NAV,
+)
+
+
+
+# used to update the mock files
+# mockery is a tool for generating mock implementations of Go interfaces
+local_resource(
+    name='mock update',
+    labels=['test'],
+    cmd='mockery',
+    deps=['./internal/port'],
+    ignore=['./internal/port/mock_*.go'],
+)
+cmd_button('Update_mock',
+    argv=['sh', '-c', 'mockery'],
+    resource='mock update',
+    icon_name='build_circle',
+    text='Generate mock',
+    # location=location.NAV,
+)
+
+# used to run the tests
+# mockery is a tool for generating mock implementations of Go interfaces
+local_resource(
+    name='Run tests',
+    labels=['test'],
+    cmd='go test ./...',
+   auto_init=False,
+)
+cmd_button('Run_tests',
+    argv=['sh', '-c', 'go test ./...'],
+    resource='Run tests',
+    icon_name='play_arrow',
+    text='Run tests',
+)
